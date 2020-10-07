@@ -1,47 +1,80 @@
 import React, { Component } from 'react';
 import './App.css';
 import Operations from './component/Operations';
-import Transaction from './component/Transaction';
 import Transactions from './component/Transcations';
+import axios from 'axios'
 
 class App extends Component {
   constructor() {
     super()
     this.state = {
-      dummy: [
-        { amount: 3200, vendor: "Elevation", category: "Salary" },
-        { amount: -7, vendor: "Runescape", category: "Entertainment" },
-        { amount: -20, vendor: "Subway", category: "Food" },
-        { amount: -98, vendor: "La Baguetterie", category: "Food" }
-      ],
+      data : [],
       totalAmount: 0
     }
   }
 
-  componentDidMount() {
-    let temp = 0
-    this.state.dummy.forEach(s => temp += s.amount)
-    this.setState({
-      totalAmount: temp
-    })
+  async componentDidMount() {
+    try {
+      let allTheData = await axios.get('http://localhost:3001/transactions')
+      let sum = 0
+      //TODO: - add id statement
+      allTheData.data.forEach(a => sum += a.amount)
+      this.setState({
+        data: allTheData.data,
+        totalAmount: sum
+      })
+      // console.log(this.state);
+    } catch (err) {
+      console.log(err);
+    }
   }
 
-  getDepositToHandel = (amount,vendor,category) => {
-    this.state.dummy.push(
-      {amount:amount, vendor:vendor, category:category}
-    )
-    let sum = 0
-    this.state.dummy.forEach(i => sum += i.amount)
-    this.setState({
-      totalAmount: this.state.totalAmount+sum
-    })
-    console.log(this.state);
+  removeTransaction = async (id) => {
+    try { 
+      let newData = [...this.state.data]
+      newData = newData.filter(i => i._id != id)
+      let newSum = this.getNewSum(newData)
+      await axios.delete(`http://localhost:3001/transaction?id=${id}`)
+        this.setState({
+          data: newData,
+          totalAmount: newSum
+        })
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   
-  removeTransaction(id) {
-    // this.state.dummy.splice(id,1)
+  getDepositToHandel = async (amount,vendor,category) => {
+    if (this.state.totalAmount + amount < 0) {
+      console.log("you don't have enough mony to make this request");
+      // need to return new component
+    } else {
+      try {
+        await axios.post('http://localhost:3001/transaction', {
+          amount: amount, vendor: vendor, category: category
+        })
+        let dataToAdd = {amount,vendor,category}
+        let newData = [...this.state.data]
+        newData.push(dataToAdd)
+        let newSum = this.getNewSum(newData)
+        this.setState({
+          data: newData,
+          totalAmount: newSum
+        })
+
+      } catch (err) {
+        console.log(err);
+      }
+    }
   }
+      
+  getNewSum = (arr) => {
+    let sum = 0
+    arr.forEach(s => sum += s.amount)
+    return sum
+  }
+  
 
   render() {
     // console.log(this.state);
@@ -49,7 +82,7 @@ class App extends Component {
       <div className="App">
         this is App and your total balance is :
         <div>{this.state.totalAmount}</div>
-        <Transactions data={this.state.dummy} />
+        <Transactions  data={this.state.data} removeHandel={this.removeTransaction} />
         <Operations depositHandlee={this.getDepositToHandel} />
       </div>
     );

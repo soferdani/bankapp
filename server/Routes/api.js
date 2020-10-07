@@ -4,7 +4,7 @@ const bank = require ('../models/bank')
 
 router.get('/transactions', async (req, res) => { // good
     try {
-        const allTransactions = await bank.find({})
+        let allTransactions = await bank.find({})
         res.send(allTransactions)
     } catch (err) {
         res.send(err)
@@ -23,7 +23,15 @@ router.post('/transaction', async (req, res) => { //good
 })
 
 router.delete('/transaction', async (req, res) => {
-    const id = req
+    const id = req.query.id
+    await bank.findByIdAndDelete(id, function (err) {
+        if (err) {
+            console.log(err)
+            res.send(err)
+        } else {
+            res.send("Successful deletion")
+        }
+    })
 })
 
 module.exports = router

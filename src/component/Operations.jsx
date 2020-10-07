@@ -22,23 +22,23 @@ class Operations extends Component {
         })
     }
 
-    transactionDeposit = () => {
-        this.props.depositHandlee(this.state.Amount,this.state.Vendor,this.state.Category)
+    handelTransaction = (e) => {
+        let amountFromState = this.state.Amount
+        let btnType = e.target.id
+        if (btnType === 'Withdraw-btn') {
+            amountFromState = ((-1)*amountFromState)
+        }        
+        this.props.depositHandlee(amountFromState,this.state.Vendor,this.state.Category)
     }
-
-    transactionWithdraw = () => {
-        this.props.depositHandlee(this.state.Amount,this.state.Vendor,this.state.Category)
-    }
-
 
     render() {
         return (
             <div>
-                <input id='Amount-input' name='Amount' type="text" onChange={this.handelInput} /><span>Amount</span>
-                <input id='Vendor-input' name='Vendor' type="text" onChange={this.handelInput} /><span>Vendor</span>
-                <input id='Category-input' name='Category' type="text" onChange={this.handelInput} /><span>Category</span>
-                <button onClick={this.transactionDeposit} id='Deposit-btn' >Deposit</button>
-                <button onClick={this.transactionWithdraw} id='Withdraw-btn' >Withdraw</button>
+                <span>Amount: </span><input id='Amount-input' name='Amount' type="text" onChange={this.handelInput} />
+                <span>Vendor: </span><input id='Vendor-input' name='Vendor' type="text" onChange={this.handelInput} />
+                <span>Category: </span><input id='Category-input' name='Category' type="text" onChange={this.handelInput} />
+                <button onClick={this.handelTransaction} id='Deposit-btn' >Deposit</button>
+                <button onClick={this.handelTransaction} id='Withdraw-btn' >Withdraw</button>
             </div>
         );
     }
